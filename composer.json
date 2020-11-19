@@ -1,0 +1,13 @@
+{
+	"name": "m50/faunadb",
+	"description": "A library for interacting with FaunaDB and writing FQL.",
+	"keywords": ["fauna", "faunadb", "db", "fql"],
+	"autoload": {},
+	"require": {
+		"php": "^7.4|^8.0"
+	},
+	"require-dev": {
+		"pestphp/pest": "^0.3",
+		"vimeo/psalm": "^4"
+	}
+}
