@@ -1,13 +1,31 @@
 {
 	"name": "m50/faunadb",
 	"description": "A library for interacting with FaunaDB and writing FQL.",
-	"keywords": ["fauna", "faunadb", "db", "fql"],
-	"autoload": {},
+	"keywords": [
+		"fauna",
+		"faunadb",
+		"db",
+		"fql"
+	],
+	"autoload": {
+		"psr-4": {
+			"FaunaDB\\": "src/"
+		}
+	},
 	"require": {
-		"php": "^7.4|^8.0"
+		"php": "^8.0",
+		"php-http/httplug": "^2.2",
+		"psr/http-message": "^1.0",
+		"psr/http-client": "^1.0",
+		"php-http/message-factory": "^1.0",
+		"php-http/discovery": "^1.14",
+		"webmozart/assert": "^1.10"
 	},
 	"require-dev": {
-		"pestphp/pest": "^0.3",
-		"vimeo/psalm": "^4"
+		"vimeo/psalm": "^4.7",
+		"pestphp/pest": "^1.7",
+		"php-http/mock-client": "^1.4",
+		"php-http/message": "^1.11",
+		"guzzlehttp/psr7": "^1.8"
 	}
 }

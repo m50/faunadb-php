@@ -1,2 +1,3 @@
-# faunadb-php
-A PHP Library for interacting with FaunaDB and writing FQL
+# FaunaDB PHP
+
+A PHP Implementation of the FaunaDB client
