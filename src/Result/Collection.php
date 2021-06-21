@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FaunaDB\Result;
 
 use ArrayAccess;
-use FaunaDB\Exceptions\ImmutableException;
 use FaunaDB\Interfaces\Arrayable;
 use Iterator;
+use Webmozart\Assert\Assert;
 
 /**
  * @template TKey
@@ -15,13 +15,19 @@ use Iterator;
  */
 class Collection implements ArrayAccess, Iterator, Arrayable
 {
-    private int $idx = 0;
-    /** @var TKey $currentKey */
-    private null|int|string $currentKey;
+    use ArrayMethodsTrait;
 
-    public function fromArrayable(Arrayable $arr): static
+    public static function fromArrayable(Arrayable $arr): static
     {
-        return new static ($arr->toArray());
+        return new static($arr->toArray());
+    }
+
+    /**
+     * @param array<TKey,TValue> $objects
+     */
+    public static function from(array $objects)
+    {
+        return new static($objects);
     }
 
     /**
@@ -30,53 +36,6 @@ class Collection implements ArrayAccess, Iterator, Arrayable
     public function __construct(private array $objects)
     {
         $this->currentKey = array_keys($objects)[0];
-    }
-
-    public function offsetExists($offset)
-    {
-        return isset($this->objects[$offset]);
-    }
-
-    public function offsetGet($offset)
-    {
-        return $this->objects[$offset];
-    }
-
-    public function offsetSet($offset, $value)
-    {
-        throw ImmutableException::withKeyAndValue($offset, $value);
-    }
-
-    public function offsetUnset($offset)
-    {
-        throw ImmutableException::withKey($offset);
-    }
-
-    public function current()
-    {
-        return $this->objects[$this->currentKey];
-    }
-
-    public function next()
-    {
-        $this->idx++;
-        $this->currentKey = array_keys($this->objects)[$this->idx] ?? null;
-    }
-
-    public function key()
-    {
-        return $this->currentKey;
-    }
-
-    public function valid()
-    {
-        return $this->offsetExists($this->currentKey);
-    }
-
-    public function rewind()
-    {
-        $this->idx = 0;
-        $this->currentKey = array_keys($this->objects)[0];
     }
 
     public function each(callable $callable): void
@@ -112,6 +71,69 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         }
 
         return new static($result);
+    }
+
+    public function implode(string $separator = '')
+    {
+        Assert::allString($this->objects);
+
+        return \implode($separator, $this->objects);
+    }
+
+    public function isObject(): bool
+    {
+        foreach (\array_keys($this->objects) as $key) {
+            if (!\is_string($key)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function hasMixedKeys(): bool
+    {
+        $hasStringKeys = false;
+        $hasIntKeys = false;
+
+        foreach (\array_keys($this->objects) as $key) {
+            if (\is_numeric($key)) {
+                $hasIntKeys = true;
+            } elseif (\is_string($key)) {
+                $hasStringKeys = true;
+            }
+        }
+
+        return $hasStringKeys && $hasIntKeys;
+    }
+
+    public function hasOnlyNumericKeys(): bool
+    {
+        foreach (\array_keys($this->objects) as $key) {
+            if (!\is_numeric($key)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function isList(): bool
+    {
+        $i = 0;
+        foreach (\array_keys($this->objects) as $key) {
+            if ($key !== $i) {
+                return false;
+            }
+            $i++;
+        }
+
+        return true;
+    }
+
+    public function count(): int
+    {
+        return \count($this->objects);
     }
 
     public function toArray(): array
