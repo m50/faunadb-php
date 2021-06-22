@@ -10,8 +10,11 @@ use Iterator;
 use Webmozart\Assert\Assert;
 
 /**
- * @template TKey
+ * @template TKey as array-key
  * @template TValue
+ * @implements ArrayAccess<Tkey,TValue>
+ * @implements Iterator<TKey,TValue>
+ * @implements Arrayable<TKey,TValue>
  */
 class Collection implements ArrayAccess, Iterator, Arrayable
 {
@@ -23,11 +26,20 @@ class Collection implements ArrayAccess, Iterator, Arrayable
     }
 
     /**
-     * @param array<TKey,TValue> $objects
+     * @param array<TKey,TValue>|Arrayable<TKey,TValue> $objects
      */
-    public static function from(array $objects)
+    public static function from(array|Arrayable $objects)
     {
+        if ($objects instanceof Arrayable) {
+            return static::fromArrayable($objects);
+        }
+
         return new static($objects);
+    }
+
+    public static function empty()
+    {
+        return new static([]);
     }
 
     /**
@@ -35,7 +47,7 @@ class Collection implements ArrayAccess, Iterator, Arrayable
      */
     public function __construct(private array $objects)
     {
-        $this->currentKey = array_keys($objects)[0];
+        $this->currentKey = array_keys($objects)[0] ?? 0;
     }
 
     public function each(callable $callable): void
@@ -59,8 +71,16 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         return new static($result);
     }
 
-    public function filter(callable $callable): static
+    public function filterNull(): static
     {
+        return $this->filter(fn ($v) => $v !== null);
+    }
+
+    public function filter(?callable $callable = null): static
+    {
+        if ($callable === null) {
+            $callable = fn ($v) => (bool) $v;
+        }
         $result = [];
         $idx = 0;
         foreach ($this->objects as $key => $obj) {
@@ -131,9 +151,47 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         return true;
     }
 
+    public function merge(Arrayable|array $toMerge): static
+    {
+        if ($toMerge instanceof Arrayable) {
+            $toMerge = $toMerge->toArray();
+        }
+
+        return new static(array_merge($this->objects, $toMerge));
+    }
+
     public function count(): int
     {
         return \count($this->objects);
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->count() === 0;
+    }
+
+    /**
+     * @psalm-return null|TValue
+     */
+    public function first(): mixed
+    {
+        if ($this->count() === 0) {
+            return null;
+        }
+
+        return $this->objects[\array_keys($this->objects)[0]];
+    }
+
+    /**
+     * @psalm-return null|TValue
+     */
+    public function last(): mixed
+    {
+        if ($this->count() === 0) {
+            return null;
+        }
+
+        return $this->objects[\array_keys($this->objects)[$this->count() - 1]];
     }
 
     public function toArray(): array
