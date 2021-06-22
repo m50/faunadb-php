@@ -6,10 +6,13 @@ namespace FaunaDB\Expr;
 
 use FaunaDB\Interfaces\Arrayable;
 use FaunaDB\Result\Collection;
+use FaunaDB\FQL;
 use function sprintf;
 use function array_keys;
 use function in_array;
 use function is_array;
+use function is_callable;
+use function is_string;
 use function json_encode;
 
 final class Expr
@@ -77,6 +80,9 @@ final class Expr
 
     public function __toString(): string
     {
+        if (Collection::from($this->raw)->hasOnlyNumericKeys()) {
+            return static::toString($this->raw);
+        }
         $keys = array_keys($this->raw);
         if (in_array('match', $keys, true)) {
             $matchStr = static::toString($this->raw['match']);
@@ -131,7 +137,7 @@ final class Expr
             return sprintf(
                 'Lambda(%s, %s)',
                 static::toString($this->raw['lambda']),
-                static::toString($this->raw['expr']),
+                $this->raw['expr'],
             );
         } elseif (in_array('filter', $keys, true)) {
             return sprintf(
@@ -165,17 +171,13 @@ final class Expr
             ->map(fn ($v) => static::toString($v, $fn))
             ->implode(', ');
 
-        return "{$fn}(${$args})";
+        return "{$fn}({$args})";
     }
 
     public static function toString(mixed $expr, ?string $caller = null): string
     {
         if ($expr instanceof Expr) {
-            if (in_array('value', array_keys($expr->raw), true)) {
-                return $expr->toFQL();
-            }
-
-            $expr = $expr->raw;
+            return $expr->toFQL();
         }
 
         if ($expr === null) {
@@ -185,13 +187,14 @@ final class Expr
         } elseif (is_array($expr) && Collection::from($expr)->hasOnlyNumericKeys()) {
             $arrAsString = static::printArray($expr, fn ($v) => static::toString($v));
 
-            return isset(static::VAR_ARGS_FUNCTIONS[$caller]) ? "[{$arrAsString}]" : $arrAsString;
+            return isset(static::VAR_ARGS_FUNCTIONS[$caller]) ? $arrAsString : "[{$arrAsString}]";
+        } elseif (is_callable($expr) && !is_string($expr) && !is_array($expr)) {
+            return FQL\Lambda($expr)->toFQL();
+        } elseif (\is_numeric($expr) || \is_bool($expr) || is_string($expr)) {
+            return json_encode($expr);
         }
 
-        return match(true) {
-            \is_numeric($expr), \is_bool($expr), \is_string($expr) => json_encode($expr),
-            default => static::printObject($expr),
-        };
+        return static::printObject($expr);
     }
 
     private static function printObject(array|Collection $obj): string
@@ -205,13 +208,9 @@ final class Expr
             ->implode(', '));
     }
 
-    private static function printArray(array|Collection $obj, callable $toStr): string
+    private static function printArray(array|Arrayable $obj, callable $toStr): string
     {
-        if (!($obj instanceof Collection)) {
-            $obj = Collection::from($obj);
-        }
-
-        return $obj->map($toStr)->implode(', ');
+        return Collection::from($obj)->map($toStr)->implode(', ');
     }
 
     private static function convertToCamelCase(string $value): string
