@@ -27,4 +27,4 @@ test('fql: Map, Lambda, Concat, Var', function () {
 
     $query = FQL\Map([['Hen', 'Wen']], FQL\Lambda(FQL\VarFunc('name'), ['name', '_']));
     expect($query)->fql()->toBe('Map([["Hen", "Wen"]], Lambda(["name", "_"], Var("name")))');
-})->only();
+});

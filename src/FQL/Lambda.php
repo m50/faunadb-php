@@ -27,11 +27,9 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
                 throw new InvalidArgumentException(
                     'Provided VarNames must be a list and must contain at least one value.'
                 );
-            } elseif ($varNames->count() === 1) {
-                $varNames = $varNames->first();
             }
 
-            return new Expr(['lambda' => wrap($varNames), 'expr' => wrap($func)]);
+            return new Expr(['lambda' => wrap(varargs($varNames)), 'expr' => wrap($func)]);
         }
         return $func;
     }
@@ -59,10 +57,5 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
 
     assertIsExprArg($expr, true);
 
-    $lambdaVal = $paramNames->toArray();
-    if ($paramNames->count() === 1) {
-        $lambdaVal = $paramNames->first();
-    }
-
-    return new Expr(['lambda' => wrap($lambdaVal), 'expr' => wrap($expr)]);
+    return new Expr(['lambda' => wrap(varargs($paramNames)), 'expr' => wrap($expr)]);
 }

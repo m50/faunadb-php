@@ -121,7 +121,7 @@ function wrap(mixed $val)
     } elseif (\is_array($val) || $val instanceof Arrayable) {
         $val = Collection::from($val);
         if ($val->hasOnlyNumericKeys()) {
-            return new Expr(wrapValues($val));
+            return wrapValues($val);
         } elseif ($val->isObject()) {
             return new Expr(['object' => wrapValues($val->toArray())]);
         }
@@ -142,4 +142,13 @@ function wrapValues(null|array|Arrayable $val): array
 function params(array $mainParams, array $optionalParams = [])
 {
     return array_merge($mainParams, array_filter($optionalParams, fn ($v) => $v !== null));
+}
+
+function varargs(array|Arrayable $args)
+{
+    $args = Collection::from($args);
+    if (!$args->hasOnlyNumericKeys()) {
+        $args = $args->values();
+    }
+    return $args->count() === 1 ? $args->first() : $args->toArray();
 }

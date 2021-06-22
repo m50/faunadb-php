@@ -187,7 +187,9 @@ final class Expr
         } elseif (is_array($expr) && Collection::from($expr)->hasOnlyNumericKeys()) {
             $arrAsString = static::printArray($expr, fn ($v) => static::toString($v));
 
-            return isset(static::VAR_ARGS_FUNCTIONS[$caller]) ? $arrAsString : "[{$arrAsString}]";
+            return Collection::from(static::VAR_ARGS_FUNCTIONS)->has($caller)
+                ? $arrAsString
+                : "[{$arrAsString}]";
         } elseif (is_callable($expr) && !is_string($expr) && !is_array($expr)) {
             return FQL\Lambda($expr)->toFQL();
         } elseif (\is_numeric($expr) || \is_bool($expr) || is_string($expr)) {

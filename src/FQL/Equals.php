@@ -16,5 +16,5 @@ function Equals(mixed ...$exprs): Expr
     Assert::minCount($exprs, 1);
     assertAllIsExprArg($exprs);
 
-    return new Expr(['equals' => wrap($exprs)]);
+    return new Expr(['equals' => wrap(varargs($exprs))]);
 }

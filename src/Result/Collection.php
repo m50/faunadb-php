@@ -165,6 +165,16 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         return \count($this->objects);
     }
 
+    public function values(): static
+    {
+        return new static(\array_values($this->objects));
+    }
+
+    public function keys(): static
+    {
+        return new static(\array_keys($this->objects));
+    }
+
     public function isEmpty(): bool
     {
         return $this->count() === 0;
@@ -192,6 +202,19 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         }
 
         return $this->objects[\array_keys($this->objects)[$this->count() - 1]];
+    }
+
+    /**
+     * @psalm-param TValue $value
+     */
+    public function has(mixed $value): bool
+    {
+        foreach ($this->objects as $obj) {
+            if ($obj === $value) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function toArray(): array
