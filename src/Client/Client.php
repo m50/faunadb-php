@@ -31,7 +31,7 @@ final class Client
     public function query(Expr $expr, array $headers = [])
     {
         $response = $this->request(self::POST, '', [
-            'body' => [],
+            'body' => \FaunaDB\FQL\wrap($expr),
             'headers' => $headers,
         ]);
 
@@ -72,7 +72,7 @@ final class Client
             $request = $request->withAddedHeader($header, $value);
         }
         if (isset($options['body'])) {
-            $body = \is_string($options['body']) ? $options['body'] : \json_encode($options['body']);
+            $body = Expr::toString($options['body']);
             $request = $request->withBody(
                 $this->streamFactory->createStream($body),
             );

@@ -10,7 +10,10 @@
 	"autoload": {
 		"psr-4": {
 			"FaunaDB\\": "src/"
-		}
+		},
+		"files": [
+			"src/autoload.php"
+		]
 	},
 	"require": {
 		"php": "^8.0",
@@ -27,6 +30,7 @@
 		"php-http/mock-client": "^1.4",
 		"php-http/message": "^1.11",
 		"guzzlehttp/psr7": "^1.8",
-		"friendsofphp/php-cs-fixer": "^3.0"
+		"friendsofphp/php-cs-fixer": "^3.0",
+		"symfony/var-dumper": "^5.3"
 	}
 }

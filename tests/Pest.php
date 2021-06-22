@@ -24,9 +24,20 @@
 |
 */
 
+use FaunaDB\Expr\Expr;
+
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
+
+
+expect()->extend('asFQL', function () {
+    $this->value = Expr::toString($this->value);
+
+    return $this;
+});
+expect()->extend('fql', fn () => $this->asFQL());
+
 
 /*
 |--------------------------------------------------------------------------
