@@ -7,7 +7,10 @@ namespace FaunaDB\Result;
 use FaunaDB\Client\Client;
 use FaunaDB\Expr\Expr;
 
-class PageHelper extends Collection
+/**
+ * @internal This should not be used manually, only through `FaunaDB\Client\Client::paginate()`.
+ */
+final class PageHelper extends Collection
 {
     private int $currentPage = 0;
 
@@ -15,7 +18,7 @@ class PageHelper extends Collection
         private Client $client,
         private Expr $expr,
         private array $params,
-        private array $headers,
+        private array $options,
     ) {
         parent::__construct([]);
         $this->nextPage();

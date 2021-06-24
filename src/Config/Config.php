@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace FaunaDB\Config;
 
 use FaunaDB\Exceptions\InvalidConfigurationException;
+use FaunaDB\Interfaces\Arrayable;
 use FaunaDB\Result\Collection;
 use Webmozart\Assert\Assert;
 
-final class Config
+final class Config implements Arrayable
 {
     /**
      * @psalm-param 'http'|'https' $scheme
@@ -21,18 +22,30 @@ final class Config
         private ?int $port = null,
         private ?string $secret = null,
         private array $headers = [],
+        private int $timeout = 60,
     ) {
         if ($secret === null) {
             $secret = getenv('FAUNADB_SECRET') ?: throw InvalidConfigurationException::withInvalidSecret();
         }
         Assert::inArray($scheme, ['https', 'http']);
+        $this->port = $port ?? ($scheme === 'https' ? 443 : 80);
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'domain' => $this->domain,
+            'scheme' => $this->scheme,
+            'port' => $this->port,
+            'secret' => $this->secret,
+            'headers' => $this->headers,
+            'timeout' => $this->timeout,
+        ];
     }
 
     public function getBaseUri(): string
     {
-        $port = $this->port ?? ($this->scheme === 'https' ? 443 : 80);
-
-        return "{$this->scheme}://{$this->domain}:{$port}/";
+        return "{$this->scheme}://{$this->domain}:{$this->port}/";
     }
 
     public function getDomain(): string
@@ -60,18 +73,8 @@ final class Config
         return $this->timeout;
     }
 
-    public function getKeepAlive(): bool
-    {
-        return $this->keepAlive;
-    }
-
     public function getHeaders(): array
     {
         return $this->headers;
-    }
-
-    public function getQueryTimeout(): ?int
-    {
-        return $this->queryTimeout;
     }
 }
