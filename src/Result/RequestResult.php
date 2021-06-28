@@ -19,14 +19,15 @@ final class RequestResult
     }
 
     /**
-     * @template TDoc
+     * @template TDoc of Document
      * @param string $documentClass
      * @psalm-param class-string<TDoc> $documentClass
-     * @return mixed
+     * @return Document
      * @psalm-return TDoc
      */
-    public function toDocument(string $documentClass)
+    public function toDocument(string $documentClass): Document
     {
+        /** @var array<string,mixed> $result */
         $result = \json_decode($this->response->getBody()->getContents(), true, flags: JSON_THROW_ON_ERROR);
 
         return new $documentClass($result);
@@ -35,5 +36,10 @@ final class RequestResult
     public function getTimeTaken(): int
     {
         return $this->end->getTimestamp() - $this->start->getTimestamp();
+    }
+
+    public function __toString(): string
+    {
+        return '';
     }
 }

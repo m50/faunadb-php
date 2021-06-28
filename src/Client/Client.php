@@ -32,10 +32,10 @@ final class Client
     ) {
     }
 
-    public function query(Expr $expr, ?Config $options = null)
+    public function query(Expr $expr, ?Config $options = null): RequestResult
     {
         $options = $this->configToOptions($options);
-        $options['body'] = \FaunaDB\FQL\wrap($expr);
+        $options['body'] = $expr;
 
         return $this->request(self::POST, '', $options);
     }
@@ -59,7 +59,7 @@ final class Client
         return (string) $response;
     }
 
-    public function close()
+    public function close(): void
     {
     }
 
@@ -69,7 +69,9 @@ final class Client
 
         $path = $this->config->getBaseUri() . $path;
         if (isset($options['query'])) {
-            $query = \is_string($options['query']) ? $options['query'] : $this->buildQueryString($options['query']);
+            /** @var string|array<string,string> $query */
+            $query = $options['query'];
+            $query = \is_string($query) ? $query : $this->buildQueryString($query);
             $path .= "?{$query}";
         }
         $request = $this->requestFactory->createRequest($method, $path);
@@ -83,6 +85,7 @@ final class Client
             );
         }
 
+        /** @var string $secret */
         $secret = $options['secret'] ?? $this->config->getSecret();
 
         $request = $request->withAddedHeader('Authorization', "Bearer {$secret}")
@@ -97,7 +100,7 @@ final class Client
 
         $response = $this->httpClient->sendRequest($request);
 
-        $txnTime = $response->getHeader('X-Txn-Time')[0];
+        $txnTime = (int) $response->getHeader('X-Txn-Time')[0];
         $this->lastTxnTime = (new DateTimeImmutable())->setTimestamp($txnTime) ?: null;
 
         return new RequestResult(

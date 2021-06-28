@@ -6,7 +6,10 @@ namespace FaunaDB\Exceptions;
 
 final class NotAnExprArgException extends BaseException
 {
-    public static function withArg($arg): static
+    /**
+     * @param callable|string $arg
+     */
+    public static function withArg(callable|string $arg): static
     {
         $type = gettype($arg);
         return new static("Argument of type '{$type}' not of ExprArg Type.", 500);

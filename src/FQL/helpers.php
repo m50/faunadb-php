@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace FaunaDB\FQL;
 
+use Closure;
 use FaunaDB\Exceptions\NotAnExprArgException;
 use FaunaDB\Expr\Expr;
 use FaunaDB\Interfaces\Arrayable;
 use FaunaDB\Result\Collection;
 use ReflectionFunction;
 
-/**
- * @psalm-type ExprVal = Expr | string | int | float | boolean | array<string,mixed> | Collection
- * @psalm-type ExprArg = ExprVal | ExprVal[] | callable(ExprArg...):Expr
- */
-
 function isExprCallable(mixed $arg): bool
 {
     if (!is_callable($arg)) {
         return false;
     }
+
+    $arg = Closure::fromCallable($arg);
 
     $arg = new ReflectionFunction($arg);
     $retType = $arg->getReturnType();
@@ -28,12 +26,12 @@ function isExprCallable(mixed $arg): bool
         return true;
     }
 
-    return isExprType($retType->getName(), true);
+    /** @var string $typeName */
+    $typeName = $retType->getName();
+
+    return isExprType($typeName, true);
 }
 
-/**
- * @psalm-return $arg is ExprArg
- */
 function isExprArg(mixed $arg, bool $allowNull = false): bool
 {
     if ($allowNull && $arg === null) {
@@ -44,6 +42,7 @@ function isExprArg(mixed $arg, bool $allowNull = false): bool
         if (Collection::from($arg)->isObject()) {
             return true;
         } else {
+            /** @var mixed $obj */
             foreach ($arg as $obj) {
                 if (!isExprArg($obj)) {
                     return false;
@@ -56,6 +55,7 @@ function isExprArg(mixed $arg, bool $allowNull = false): bool
         if ($arg->isObject()) {
             return true;
         } else {
+            /** @var mixed $obj */
             foreach ($arg as $obj) {
                 if (!isExprArg($obj)) {
                     return false;
@@ -93,24 +93,20 @@ function isExprType(string $type, bool $allowNull = false): bool
 function assertIsExprArg(mixed $arg, bool $allowNull = false): void
 {
     if (!isExprArg($arg, $allowNull)) {
-        throw NotAnExprArgException::withArg($arg);
+        throw NotAnExprArgException::withArg((string) $arg);
     }
 }
 
 function assertAllIsExprArg(array $args, bool $allowNull = false): void
 {
+    /** @var mixed $arg */
     foreach ($args as $arg) {
         assertIsExprArg($arg, $allowNull);
     }
 }
 
 
-/**
- * @psalm-param ExprArg|null $val
- * @psalm-return ExprArg|null
- * @psalm-pure
- */
-function wrap(mixed $val)
+function wrap(mixed $val): mixed
 {
     if ($val === null) {
         return null;
@@ -119,36 +115,43 @@ function wrap(mixed $val)
     } elseif (is_callable($val) && !is_string($val) && !is_array($val)) {
         return Lambda($val);
     } elseif (\is_array($val) || $val instanceof Arrayable) {
-        $val = Collection::from($val);
-        if ($val->hasOnlyNumericKeys()) {
-            return wrapValues($val);
-        } elseif ($val->isObject()) {
-            return new Expr(['object' => wrapValues($val->toArray())]);
+        /** @psalm-var mixed[]|Arrayable<array-key,mixed> $val */
+        $objVals = Collection::from($val);
+        if ($objVals->hasOnlyNumericKeys()) {
+            return wrapValues($objVals);
+        } elseif ($objVals->isObject()) {
+            return new Expr(['object' => wrapValues($objVals->toArray())]);
         }
     }
 
     return $val;
 }
 
-function wrapValues(null|array|Arrayable $val): array
+function wrapValues(null|array|Arrayable $val): ?array
 {
     if ($val === null) {
         return null;
     }
 
-    return Collection::from($val)->map(fn ($v) => wrap($v))->toArray();
+    return Collection::from($val)->map(fn (mixed $v): mixed => wrap($v))->toArray();
 }
 
-function params(array $mainParams, array $optionalParams = [])
+/**
+ * @param array<string,mixed> $mainParams
+ * @param array<string,mixed> $optionalParams
+ * @return array<string,mixed>
+ */
+function params(array $mainParams, array $optionalParams = []): array
 {
     return array_merge($mainParams, array_filter($optionalParams, fn ($v) => $v !== null));
 }
 
-function varargs(array|Arrayable $args)
+function varargs(array|Arrayable $args): mixed
 {
     $args = Collection::from($args);
     if (!$args->hasOnlyNumericKeys()) {
         $args = $args->values();
     }
+
     return $args->count() === 1 ? $args->first() : $args->toArray();
 }

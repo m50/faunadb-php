@@ -7,9 +7,6 @@ namespace FaunaDB\FQL;
 use FaunaDB\Expr\Expr;
 
 /**
- * @psalm-param ExprArg $condition
- * @psalm-param ExprArg $then
- * @psalm-param ExprArg $else
  * @return Expr
  */
 function IfFunc(mixed $condition, mixed $then, mixed $else = null): Expr

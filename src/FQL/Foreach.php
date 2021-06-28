@@ -7,11 +7,8 @@ namespace FaunaDB\FQL;
 use FaunaDB\Expr\Expr;
 
 /**
- * @param ExprArg $collection An expression resulting in a collection to be iterated over.
- * @param ExprArg $lambdaExpr A function to be called for each element of the collection.
- * @psalm-param ExprArg $collection
- * @psalm-param ExprArg $lambdaExpr
- * @psalm-pure
+ * @param mixed $collection An expression resulting in a collection to be iterated over.
+ * @param mixed $lambdaExpr A function to be called for each element of the collection.
  */
 function ForeachFunc(mixed $collection, mixed $lambdaExpr): Expr
 {

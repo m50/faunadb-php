@@ -6,10 +6,7 @@ namespace FaunaDB\FQL;
 
 use FaunaDB\Expr\Expr;
 
-/**
- * @psalm-param ExprArg $lambda
- * @psalm-pure
- */
+
 function Query(mixed $lambda): Expr
 {
     assertIsExprArg($lambda);

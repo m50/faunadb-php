@@ -4,52 +4,73 @@ declare(strict_types=1);
 
 namespace FaunaDB\Result;
 
-use ArrayAccess;
-use FaunaDB\Interfaces\Arrayable;
 use Iterator;
+use ArrayAccess;
 use Webmozart\Assert\Assert;
+use FaunaDB\Interfaces\Arrayable;
+use FaunaDB\Exceptions\ImmutableException;
 
 /**
  * @template TKey as array-key
  * @template TValue
- * @implements ArrayAccess<Tkey,TValue>
- * @implements Iterator<TKey,TValue>
- * @implements Arrayable<TKey,TValue>
+ * @template-implements ArrayAccess<TKey,TValue>
+ * @template-implements Iterator<TKey,TValue>
+ * @template-implements Arrayable<TKey,TValue>
+ * @psalm-immutable
  */
-class Collection implements ArrayAccess, Iterator, Arrayable
+final class Collection implements ArrayAccess, Iterator, Arrayable
 {
-    use ArrayMethodsTrait;
+    /**
+     * @psalm-readonly-allow-private-mutation
+     */
+    private int $idx = 0;
+    /**
+     * @psalm-readonly-allow-private-mutation
+     * @psalm-var TKey|null $currentKey
+     */
+    private null|int|string $currentKey;
 
-    public static function fromArrayable(Arrayable $arr): static
-    {
-        return new static($arr->toArray());
-    }
+    /** @var array<TKey,TValue> $objects */
+    private array $objects = [];
 
     /**
-     * @param array<TKey,TValue>|Arrayable<TKey,TValue> $objects
+     * @template TPassedKey as array-key
+     * @template TPassedValue
+     * @param Arrayable|array $objects
+     * @psalm-param Arrayable<TPassedKey,TPassedValue>|array<TPassedKey,TPassedValue> $objects
+     * @psalm-return static<TPassedKey,TPassedValue>
+     * @psalm-pure
      */
-    public static function from(array|Arrayable $objects)
+    public static function from(array|Arrayable $objects): static
     {
-        if ($objects instanceof Arrayable) {
-            return static::fromArrayable($objects);
-        }
+        /** @var static<TPassedKey,TPassedValue> $value */
+        $value = new static($objects);
 
-        return new static($objects);
+        return $value;
     }
 
-    public static function empty()
+    public static function empty(): static
     {
         return new static([]);
     }
 
     /**
-     * @param array<TKey,TValue> $objects
+     * @param array<TKey,TValue>|Arrayable<TKey,TValue> $objects
      */
-    public function __construct(private array $objects)
+    public function __construct(array|Arrayable $objects)
     {
-        $this->currentKey = array_keys($objects)[0] ?? 0;
+        if ($objects instanceof Arrayable) {
+            $objects = $objects->toArray();
+        }
+        $this->objects = $objects;
+        $this->currentKey = array_keys($objects)[0] ?? null;
     }
 
+    /**
+     * @param callable $callable
+     * @psalm-param callable(TValue,TKey=,int=) $callable
+     * @return void
+     */
     public function each(callable $callable): void
     {
         $idx = 0;
@@ -59,8 +80,16 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         }
     }
 
+    /**
+     * @template TNewValue
+     * @param callable $callable
+     * @psalm-param callable(TValue,TKey=,int=):TNewValue $callable
+     * @return static
+     * @psalm-return static<TKey,TNewValue>
+     */
     public function map(callable $callable): static
     {
+        /** @var array<TKey,TValue> $result */
         $result = [];
         $idx = 0;
         foreach ($this->objects as $key => $obj) {
@@ -71,18 +100,29 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         return new static($result);
     }
 
+    /**
+     * @psalm-return static<TKey,TValue>
+     */
     public function filterNull(): static
     {
-        return $this->filter(fn ($v) => $v !== null);
+        return $this->filter(fn (mixed $v): bool => $v !== null);
     }
 
+    /**
+     * @param callable $callable
+     * @psalm-param callable(TValue,TKey=,int=):bool $callable
+     * @return static
+     * @psalm-return static<TKey,TValue>
+     */
     public function filter(?callable $callable = null): static
     {
         if ($callable === null) {
-            $callable = fn ($v) => (bool) $v;
+            $callable = fn (mixed $v, mixed ...$_): bool => (bool) $v;
         }
+
         $result = [];
         $idx = 0;
+
         foreach ($this->objects as $key => $obj) {
             if ($callable($obj, $key, $idx)) {
                 $result[$key] = $obj;
@@ -93,7 +133,7 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         return new static($result);
     }
 
-    public function implode(string $separator = '')
+    public function implode(string $separator = ''): string
     {
         Assert::allString($this->objects);
 
@@ -117,9 +157,9 @@ class Collection implements ArrayAccess, Iterator, Arrayable
         $hasIntKeys = false;
 
         foreach (\array_keys($this->objects) as $key) {
-            if (\is_numeric($key)) {
+            if (\is_integer($key)) {
                 $hasIntKeys = true;
-            } elseif (\is_string($key)) {
+            } else {
                 $hasStringKeys = true;
             }
         }
@@ -130,7 +170,7 @@ class Collection implements ArrayAccess, Iterator, Arrayable
     public function hasOnlyNumericKeys(): bool
     {
         foreach (\array_keys($this->objects) as $key) {
-            if (!\is_numeric($key)) {
+            if (!\is_integer($key)) {
                 return false;
             }
         }
@@ -189,7 +229,9 @@ class Collection implements ArrayAccess, Iterator, Arrayable
             return null;
         }
 
-        return $this->objects[\array_keys($this->objects)[0]];
+        $firstKey = \array_keys($this->objects)[0] ?? 0;
+
+        return $this->objects[$firstKey] ?? null;
     }
 
     /**
@@ -215,6 +257,92 @@ class Collection implements ArrayAccess, Iterator, Arrayable
             }
         }
         return false;
+    }
+
+    /**
+     * @param string|int $offset
+     * @psalm-param TKey $offset
+     * @return bool
+     */
+    public function offsetExists($offset)
+    {
+        return isset($this->objects[$offset]);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->objects[$offset];
+    }
+
+    /**
+     * @psalm-param TKey $offset
+     * @psalm-param TValue $value
+     * @psalm-return never
+     * @throws \FaunaDB\Exceptions\ImmutableException
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw ImmutableException::withKeyAndValue($offset, $value);
+    }
+
+    /**
+     * @psalm-param TKey $offset
+     * @psalm-return never
+     * @throws \FaunaDB\Exceptions\ImmutableException
+     */
+    public function offsetUnset($offset)
+    {
+        throw ImmutableException::withKey($offset);
+    }
+
+    /**
+     * @psalm-return TValue|null
+     */
+    public function current()
+    {
+        if ($this->currentKey === null) {
+            return null;
+        }
+
+        return $this->objects[$this->currentKey];
+    }
+
+    /**
+     * @psalm-external-mutation-free
+     */
+    public function next()
+    {
+        $this->idx += 1;
+        $this->currentKey = array_keys($this->objects)[$this->idx] ?? null;
+    }
+
+    /**
+     * @psalm-return TKey
+     */
+    public function key(): null|int|string
+    {
+        return $this->currentKey;
+    }
+
+    /**
+     * @return bool
+     */
+    public function valid()
+    {
+        if ($this->currentKey === null) {
+            return false;
+        }
+
+        return $this->offsetExists($this->currentKey);
+    }
+
+    /**
+     * @psalm-external-mutation-free
+     */
+    public function rewind()
+    {
+        $this->idx = 0;
+        $this->currentKey = array_keys($this->objects)[0];
     }
 
     public function toArray(): array

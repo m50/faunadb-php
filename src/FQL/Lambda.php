@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace FaunaDB\FQL;
 
+use Closure;
 use FaunaDB\Expr\Expr;
 use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionParameter;
 use InvalidArgumentException;
 use FaunaDB\Result\Collection;
-use FaunaDB\Exceptions\NotAnExprArgException;
 use FaunaDB\Interfaces\Arrayable;
+use FaunaDB\Exceptions\NotAnExprArgException;
 
 /**
- * @psalm-param Expr|callable(ExprArg...):ExprArg $func
+ * @psalm-param Expr|callable(mixed...):mixed $func
+ * @psalm-param null|list<string>|Arrayable<int,string> $varNames
  */
 function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Expr
 {
@@ -21,7 +24,7 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
         if ($varNames !== null) {
             $varNames = Collection::from($varNames)
                 ->filterNull()
-                ->map(fn ($v) => \str_replace('$', '', $v));
+                ->map(fn (string $v): string => \str_replace('$', '', $v));
 
             if (!$varNames->isList() || $varNames->isEmpty()) {
                 throw new InvalidArgumentException(
@@ -37,7 +40,7 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
         throw NotAnExprArgException::withArg($func);
     }
 
-    $method = new ReflectionFunction($func);
+    $method = new ReflectionFunction(Closure::fromCallable($func));
     $params = Collection::from($method->getParameters());
     if ($params->count() < 1) {
         throw new InvalidArgumentException('Provided function must take at least 1 arguement.');
@@ -45,7 +48,7 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
     /** @var \ReflectionParameter $param */
     foreach ($params as $param) {
         $paramType = $param->getType();
-        if ($paramType !== null && $paramType->getName() !== Expr::class) {
+        if ($paramType instanceof ReflectionNamedType && $paramType->getName() !== Expr::class) {
             throw NotAnExprArgException::withArg($param->getName());
         }
     }
@@ -53,6 +56,7 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
     $paramNames = $params->map(fn (ReflectionParameter $param) => $param->getName());
     $paramVars = $paramNames->map(fn (string $name) => VarFunc($name));
 
+    /** @var mixed $expr */
     $expr = call_user_func_array($func, $paramVars->toArray());
 
     assertIsExprArg($expr, true);

@@ -7,11 +7,8 @@ namespace FaunaDB\FQL;
 use FaunaDB\Expr\Expr;
 
 /**
- * @param ExprArg $collection An expression resulting in a collection to be filtered.
- * @param ExprArg $lambdaExpr A function that returns a boolean used to filter unwanted values.
- * @psalm-param ExprArg $collection
- * @psalm-param ExprArg $lambdaExpr
- * @psalm-pure
+ * @param mixed $collection An expression resulting in a collection to be filtered.
+ * @param mixed $lambda Expr A function that returns a boolean used to filter unwanted values.
  */
 function Filter(mixed $collection, mixed $lambdaExpr): Expr
 {

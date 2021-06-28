@@ -7,10 +7,7 @@ namespace FaunaDB\FQL;
 use FaunaDB\Expr\Expr;
 
 /**
- * @psalm-param ExprArg $ref
- * @psalm-param ExprArg|null $id
  * @psalm-return Expr
- * @psalm-pure
  */
 function Ref(mixed $ref, mixed $id = null): Expr
 {

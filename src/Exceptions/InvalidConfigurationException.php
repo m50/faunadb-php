@@ -6,7 +6,7 @@ namespace FaunaDB\Exceptions;
 
 final class InvalidConfigurationException extends BaseException
 {
-    public static function withInvalidSecret()
+    public static function withInvalidSecret(): self
     {
         return new self('Invalid or no FaunaDB secret provided.', 500);
     }

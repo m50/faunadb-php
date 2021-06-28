@@ -9,10 +9,15 @@ use FaunaDB\Interfaces\Arrayable;
 use FaunaDB\Result\Collection;
 use Webmozart\Assert\Assert;
 
+/**
+ * @implements Arrayable<string,mixed>
+ * @psalm-immutable
+ */
 final class Config implements Arrayable
 {
     /**
      * @psalm-param 'http'|'https' $scheme
+     * @psalm-param array<string,string> $headers
      * @throws \FaunaDB\Exceptions\InvalidConfigurationException
      * @throws \Webmozart\Assert\InvalidArgumentException
      */
@@ -25,12 +30,16 @@ final class Config implements Arrayable
         private int $timeout = 60,
     ) {
         if ($secret === null) {
-            $secret = getenv('FAUNADB_SECRET') ?: throw InvalidConfigurationException::withInvalidSecret();
+            getenv('FAUNADB_SECRET') ?: throw InvalidConfigurationException::withInvalidSecret();
         }
         Assert::inArray($scheme, ['https', 'http']);
         $this->port = $port ?? ($scheme === 'https' ? 443 : 80);
     }
 
+    /**
+     * @return array<string,mixed>
+     * @psalm-mutation-free
+     */
     public function toArray(): array
     {
         return [
@@ -73,6 +82,9 @@ final class Config implements Arrayable
         return $this->timeout;
     }
 
+    /**
+     * @return array<string,string>
+     */
     public function getHeaders(): array
     {
         return $this->headers;

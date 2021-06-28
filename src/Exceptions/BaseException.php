@@ -9,7 +9,7 @@ use Throwable;
 
 abstract class BaseException extends Exception
 {
-    protected function __construct(string $message = '', int $code = 0, ?Throwable $prev = null)
+    final protected function __construct(string $message = '', int $code = 0, ?Throwable $prev = null)
     {
         parent::__construct($message, $code, $prev);
     }

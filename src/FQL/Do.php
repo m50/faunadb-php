@@ -7,9 +7,7 @@ namespace FaunaDB\FQL;
 use FaunaDB\Expr\Expr;
 use Webmozart\Assert\Assert;
 
-/**
- * @psalm-param ExprArg ...$args
- */
+
 function DoFunc(mixed ...$args): Expr
 {
     Assert::minCount($args, 1);

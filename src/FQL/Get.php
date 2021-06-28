@@ -7,10 +7,7 @@ namespace FaunaDB\FQL;
 use DateTimeInterface;
 use FaunaDB\Expr\Expr;
 
-/**
- * @psalm-param ExprArg $ref
- * @psalm-pure
- */
+
 function Get(mixed $ref, null|int|DateTimeInterface $ts = null): Expr
 {
     assertIsExprArg($ref);

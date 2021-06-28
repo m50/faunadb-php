@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FaunaDB\FQL;
 
 use FaunaDB\Expr\Expr;
+use Webmozart\Assert\Assert;
 
 /**
  * A more generic `Is` expression, that allows dynamic type checking.
@@ -14,9 +15,7 @@ use FaunaDB\Expr\Expr;
  *   - `FQL\Is('empty', FQL\Collection(...)); => IsEmpty(Collection(...))`
  *   - `FQL\Is('null', null); => IsNull(null)`
  * @param mixed $expr
- * @psalm-param ExprArg $collection
  * @return Expr
- * @psalm-pure
  */
 function Is(string $type, mixed $expr): Expr
 {
@@ -26,14 +25,15 @@ function Is(string $type, mixed $expr): Expr
     }
     $func = __NAMESPACE__ . "\\Is{$type}";
 
-    return call_user_func($func, $expr);
+    $result = call_user_func($func, $expr);
+    Assert::isInstanceOf($result, Expr::class);
+
+    return $result;
 }
 
 /**
  * See the [docs](https://app.fauna.com/documentation/reference/queryapi#collections).
  * @param mixed $collection An expression resulting in a collection.
- * @psalm-param ExprArg $collection
- * @psalm-pure
  */
 function IsEmpty(mixed $collection): Expr
 {
@@ -45,8 +45,6 @@ function IsEmpty(mixed $collection): Expr
 /**
  * See the [docs](https://app.fauna.com/documentation/reference/queryapi#collections).
  * @param mixed $collection An expression resulting in a collection.
- * @psalm-param ExprArg $collection
- * @psalm-pure
  */
 function IsNonEmpty(mixed $collection): Expr
 {
@@ -59,8 +57,6 @@ function IsNonEmpty(mixed $collection): Expr
  * See the [docs](https://app.fauna.com/documentation/reference/queryapi#collections).
  * Alias of IsNonEmpty to be more PHP familiar.
  * @param mixed $collection An expression resulting in a collection.
- * @psalm-param ExprArg $collection
- * @psalm-pure
  */
 function IsNotEmpty(mixed $collection): Expr
 {
@@ -72,8 +68,6 @@ function IsNotEmpty(mixed $collection): Expr
 /**
  * Check if the expression is a number.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsNumber](https://docs.fauna.com/fauna/current/api/fql/functions/isnumber)
  */
 function IsNumber(mixed $expr): Expr
@@ -86,8 +80,6 @@ function IsNumber(mixed $expr): Expr
 /**
  * Check if the expression is a double.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsDouble](https://docs.fauna.com/fauna/current/api/fql/functions/isdouble)
  */
 function IsDouble(mixed $expr): Expr
@@ -100,8 +92,6 @@ function IsDouble(mixed $expr): Expr
 /**
  * Check if the expression is an integer.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsInteger](https://docs.fauna.com/fauna/current/api/fql/functions/isinteger)
  */
 function IsInteger(mixed $expr): Expr
@@ -114,8 +104,6 @@ function IsInteger(mixed $expr): Expr
 /**
  * Check if the expression is a boolean.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsBoolean](https://docs.fauna.com/fauna/current/api/fql/functions/IsBoolean)
  */
 function IsBoolean(mixed $expr): Expr
@@ -129,8 +117,6 @@ function IsBoolean(mixed $expr): Expr
  * Check if the expression is a boolean.
  * Alias of IsBoolean to be more PHP familiar.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsBoolean](https://docs.fauna.com/fauna/current/api/fql/functions/IsBoolean)
  */
 function IsBool(mixed $expr): Expr
@@ -143,8 +129,6 @@ function IsBool(mixed $expr): Expr
 /**
  * Check if the expression is a null.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsNull](https://docs.fauna.com/fauna/current/api/fql/functions/IsNull)
  */
 function IsNull(mixed $expr): Expr
@@ -157,8 +141,6 @@ function IsNull(mixed $expr): Expr
 /**
  * Check if the expression is a byte array.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsBytes](https://docs.fauna.com/fauna/current/api/fql/functions/IsBytes)
  */
 function IsBytes(mixed $expr): Expr
@@ -171,8 +153,6 @@ function IsBytes(mixed $expr): Expr
 /**
  * Check if the expression is a timestamp.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsTimestamp](https://docs.fauna.com/fauna/current/api/fql/functions/IsTimestamp)
  */
 function IsTimestamp(mixed $expr): Expr
@@ -185,8 +165,6 @@ function IsTimestamp(mixed $expr): Expr
 /**
  * Check if the expression is a date.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsDate](https://docs.fauna.com/fauna/current/api/fql/functions/IsDate)
  */
 function IsDate(mixed $expr): Expr
@@ -199,8 +177,6 @@ function IsDate(mixed $expr): Expr
 /**
  * Check if the expression is a string.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsString](https://docs.fauna.com/fauna/current/api/fql/functions/IsString)
  */
 function IsString(mixed $expr): Expr
@@ -213,8 +189,6 @@ function IsString(mixed $expr): Expr
 /**
  * Check if the expression is an array.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsArray](https://docs.fauna.com/fauna/current/api/fql/functions/IsArray)
  */
 function IsArray(mixed $expr): Expr
@@ -227,8 +201,6 @@ function IsArray(mixed $expr): Expr
 /**
  * Check if the expression is an Object.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsObject](https://docs.fauna.com/fauna/current/api/fql/functions/IsObject)
  */
 function IsObject(mixed $expr): Expr
@@ -241,8 +213,6 @@ function IsObject(mixed $expr): Expr
 /**
  * Check if the expression is a ref.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsRef](https://docs.fauna.com/fauna/current/api/fql/functions/IsRef)
  */
 function IsRef(mixed $expr): Expr
@@ -255,8 +225,6 @@ function IsRef(mixed $expr): Expr
 /**
  * Check if the expression is a set.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsSet](https://docs.fauna.com/fauna/current/api/fql/functions/IsSet)
  */
 function IsSetFunc(mixed $expr): Expr
@@ -269,8 +237,6 @@ function IsSetFunc(mixed $expr): Expr
 /**
  * Check if the expression is a document.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsDoc](https://docs.fauna.com/fauna/current/api/fql/functions/IsDoc)
  */
 function IsDoc(mixed $expr): Expr
@@ -283,8 +249,6 @@ function IsDoc(mixed $expr): Expr
 /**
  * Check if the expression is a document.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsDoc](https://docs.fauna.com/fauna/current/api/fql/functions/IsDoc)
  */
 function IsDocument(mixed $expr): Expr
@@ -297,8 +261,6 @@ function IsDocument(mixed $expr): Expr
 /**
  * Check if the expression is a lambda.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsLambda](https://docs.fauna.com/fauna/current/api/fql/functions/IsLambda)
  */
 function IsLambda(mixed $expr): Expr
@@ -311,8 +273,6 @@ function IsLambda(mixed $expr): Expr
 /**
  * Check if the expression is a collection.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsCollection](https://docs.fauna.com/fauna/current/api/fql/functions/IsCollection)
  */
 function IsCollection(mixed $expr): Expr
@@ -325,8 +285,6 @@ function IsCollection(mixed $expr): Expr
 /**
  * Check if the expression is a Database.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsDatabase](https://docs.fauna.com/fauna/current/api/fql/functions/IsDatabase)
  */
 function IsDatabase(mixed $expr): Expr
@@ -339,8 +297,6 @@ function IsDatabase(mixed $expr): Expr
 /**
  * Check if the expression is an Index.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsIndex](https://docs.fauna.com/fauna/current/api/fql/functions/IsIndex)
  */
 function IsIndex(mixed $expr): Expr
@@ -353,8 +309,6 @@ function IsIndex(mixed $expr): Expr
 /**
  * Check if the expression is a function.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsFunction](https://docs.fauna.com/fauna/current/api/fql/functions/IsFunction)
  */
 function IsFunction(mixed $expr): Expr
@@ -367,8 +321,6 @@ function IsFunction(mixed $expr): Expr
 /**
  * Check if the expression is a key.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsKey](https://docs.fauna.com/fauna/current/api/fql/functions/IsKey)
  */
 function IsKey(mixed $expr): Expr
@@ -381,8 +333,6 @@ function IsKey(mixed $expr): Expr
 /**
  * Check if the expression is a token.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsToken](https://docs.fauna.com/fauna/current/api/fql/functions/IsToken)
  */
 function IsToken(mixed $expr): Expr
@@ -395,8 +345,6 @@ function IsToken(mixed $expr): Expr
 /**
  * Check if the expression is credentials.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsCredentials](https://docs.fauna.com/fauna/current/api/fql/functions/IsCredentials)
  */
 function IsCredentials(mixed $expr): Expr
@@ -409,8 +357,6 @@ function IsCredentials(mixed $expr): Expr
 /**
  * Check if the expression is a role.
  * @param mixed $expr The expression to check
- * @psalm-param ExprArg $expr
- * @psalm-pure
  * @see [IsRole](https://docs.fauna.com/fauna/current/api/fql/functions/IsRole)
  */
 function IsRole(mixed $expr): Expr

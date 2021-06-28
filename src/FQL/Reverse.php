@@ -7,7 +7,6 @@ namespace FaunaDB\FQL;
 use FaunaDB\Expr\Expr;
 
 /**
- * @psalm-param ExprArg $expr
  * @psalm-return Expr
  */
 function Reverse(mixed $expr): Expr

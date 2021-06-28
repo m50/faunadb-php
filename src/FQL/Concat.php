@@ -6,17 +6,21 @@ namespace FaunaDB\FQL;
 
 use FaunaDB\Expr\Expr;
 use FaunaDB\Result\Collection;
-use function is_array;
-use function is_callable;
 
 /**
- * @psalm-param Collection<string,ExprArg>|array<string,ExprArg> $vars
+ * See the [docs](https://app.fauna.com/documentation/reference/queryapi#string-functions).
+ *
+ * @param Collection|array $vars A list of strings to concatenate.
+ * @param string|null $separator The separator to use between each string.
+ * @psalm-param Collection<string,mixed>|array<string,mixed> $vars
  * @psalm-return Expr
- * @psalm-pure
  */
 function Concat(Collection|array $vars, ?string $separator = null): Expr
 {
     $vars = Collection::from($vars);
 
-    return new Expr(params(['concat' => wrap($vars->toArray())], ['separator' => wrap($separator)]));
+    return new Expr(params(
+        ['concat' => wrap($vars->toArray())],
+        ['separator' => wrap($separator)]
+    ));
 }

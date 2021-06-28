@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace FaunaDB\Exceptions;
 
-final class ImmutableException
+final class ImmutableException extends BaseException
 {
-    public static function withKeyAndValue(string|int $key, $value): self
+    public static function withKeyAndValue(string|int $key, mixed $value): self
     {
-        return new self("Unable to set '{$key}' with <{$value}> because it is immutable.");
+        $value = (string) $value;
+
+        return new static("Unable to set '{$key}' with <{$value}> because it is immutable.");
     }
 
     public static function withKey(string|int $key): self
     {
-        return new self("Unable to set '{$key}' because it is immutable.");
+        $key = (string) $key;
+
+        return new static("Unable to set '{$key}' because it is immutable.");
     }
 }
