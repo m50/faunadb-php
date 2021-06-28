@@ -10,7 +10,7 @@ use FaunaDB\Expr\Expr;
 function At(DateTimeInterface|int $time, mixed $expr): Expr
 {
     assertIsExprArg($expr);
-    
+
     if ($time instanceof DateTimeInterface) {
         $time = $time->getTimestamp();
     }

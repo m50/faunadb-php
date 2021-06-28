@@ -143,7 +143,7 @@ final class Collection implements ArrayAccess, Iterator, Arrayable
     public function isObject(): bool
     {
         foreach (\array_keys($this->objects) as $key) {
-            if (!\is_string($key)) {
+            if (! \is_string($key)) {
                 return false;
             }
         }
@@ -170,7 +170,7 @@ final class Collection implements ArrayAccess, Iterator, Arrayable
     public function hasOnlyNumericKeys(): bool
     {
         foreach (\array_keys($this->objects) as $key) {
-            if (!\is_integer($key)) {
+            if (! \is_integer($key)) {
                 return false;
             }
         }
@@ -256,6 +256,7 @@ final class Collection implements ArrayAccess, Iterator, Arrayable
                 return true;
             }
         }
+
         return false;
     }
 
@@ -301,7 +302,7 @@ final class Collection implements ArrayAccess, Iterator, Arrayable
     public function current()
     {
         if ($this->currentKey === null) {
-            return null;
+            return;
         }
 
         return $this->objects[$this->currentKey];

@@ -197,7 +197,7 @@ final class Expr
             return in_array($caller, static::VAR_ARGS_FUNCTIONS, true)
                 ? $arrAsString
                 : "[{$arrAsString}]";
-        } elseif (is_callable($expr) && !is_string($expr) && !is_array($expr)) {
+        } elseif (is_callable($expr) && ! is_string($expr) && ! is_array($expr)) {
             return FQL\Lambda($expr)->toFQL();
         } elseif ($expr instanceof Arrayable || \is_array($expr)) {
             /** @var array<string,mixed> $expr */

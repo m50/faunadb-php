@@ -26,7 +26,7 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
                 ->filterNull()
                 ->map(fn (string $v): string => \str_replace('$', '', $v));
 
-            if (!$varNames->isList() || $varNames->isEmpty()) {
+            if (! $varNames->isList() || $varNames->isEmpty()) {
                 throw new InvalidArgumentException(
                     'Provided VarNames must be a list and must contain at least one value.'
                 );
@@ -34,9 +34,10 @@ function Lambda(callable|Expr $func, null|array|Arrayable $varNames = null): Exp
 
             return new Expr(['lambda' => wrap(varargs($varNames)), 'expr' => wrap($func)]);
         }
+
         return $func;
     }
-    if (!isExprCallable($func)) {
+    if (! isExprCallable($func)) {
         throw NotAnExprArgException::withArg($func);
     }
 

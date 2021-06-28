@@ -23,11 +23,11 @@ final class Query
         $func = $namespace . $name . 'Func';
 
         // If real param doesn't end with `Func`, then use real name
-        if (!function_exists($func)) {
+        if (! function_exists($func)) {
             $func = "{$namespace}{$name}";
         }
 
-        if (!function_exists($func)) {
+        if (! function_exists($func)) {
             throw new InvalidArgumentException("FQL Function {$func} does not exist.");
         }
 

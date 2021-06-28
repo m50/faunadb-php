@@ -12,6 +12,7 @@ final class NotAnExprArgException extends BaseException
     public static function withArg(callable|string $arg): static
     {
         $type = gettype($arg);
+
         return new static("Argument of type '{$type}' not of ExprArg Type.", 500);
     }
 }

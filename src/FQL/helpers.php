@@ -13,7 +13,7 @@ use ReflectionFunction;
 
 function isExprCallable(mixed $arg): bool
 {
-    if (!is_callable($arg)) {
+    if (! is_callable($arg)) {
         return false;
     }
 
@@ -44,7 +44,7 @@ function isExprArg(mixed $arg, bool $allowNull = false): bool
         } else {
             /** @var mixed $obj */
             foreach ($arg as $obj) {
-                if (!isExprArg($obj)) {
+                if (! isExprArg($obj)) {
                     return false;
                 }
             }
@@ -57,7 +57,7 @@ function isExprArg(mixed $arg, bool $allowNull = false): bool
         } else {
             /** @var mixed $obj */
             foreach ($arg as $obj) {
-                if (!isExprArg($obj)) {
+                if (! isExprArg($obj)) {
                     return false;
                 }
             }
@@ -92,7 +92,7 @@ function isExprType(string $type, bool $allowNull = false): bool
 
 function assertIsExprArg(mixed $arg, bool $allowNull = false): void
 {
-    if (!isExprArg($arg, $allowNull)) {
+    if (! isExprArg($arg, $allowNull)) {
         throw NotAnExprArgException::withArg((string) $arg);
     }
 }
@@ -112,7 +112,7 @@ function wrap(mixed $val): mixed
         return null;
     } elseif ($val instanceof Expr) {
         return $val;
-    } elseif (is_callable($val) && !is_string($val) && !is_array($val)) {
+    } elseif (is_callable($val) && ! is_string($val) && ! is_array($val)) {
         return Lambda($val);
     } elseif (\is_array($val) || $val instanceof Arrayable) {
         /** @psalm-var mixed[]|Arrayable<array-key,mixed> $val */
@@ -149,7 +149,7 @@ function params(array $mainParams, array $optionalParams = []): array
 function varargs(array|Arrayable $args): mixed
 {
     $args = Collection::from($args);
-    if (!$args->hasOnlyNumericKeys()) {
+    if (! $args->hasOnlyNumericKeys()) {
         $args = $args->values();
     }
 
