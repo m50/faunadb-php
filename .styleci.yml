@@ -1,0 +1,11 @@
+preset: PSR12
+risky: true
+enabled:
+  - not_operator_with_successor_space
+  - blank_line_before_return
+  - simplified_null_return
+finder:
+  exclude:
+    - vendor
+    - tests
+  name: "*.php"
