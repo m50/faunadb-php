@@ -40,7 +40,7 @@ final class Client
         return $this->request(self::POST, '', $options);
     }
 
-    public function paginate(Expr $expr, array $params, ?Config $options): PageHelper
+    public function paginate(Expr $expr, array $params, ?Config $options = null): PageHelper
     {
         $options = $this->configToOptions($options);
 
