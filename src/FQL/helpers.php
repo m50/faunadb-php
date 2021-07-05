@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FaunaDB\FQL;
 
 use Closure;
+use DateTimeInterface;
 use FaunaDB\Exceptions\NotAnExprArgException;
 use FaunaDB\Expr\Expr;
 use FaunaDB\Interfaces\Arrayable;
@@ -35,6 +36,10 @@ function isExprCallable(mixed $arg): bool
 function isExprArg(mixed $arg, bool $allowNull = false): bool
 {
     if ($allowNull && $arg === null) {
+        return true;
+    }
+
+    if ($arg instanceof DateTimeInterface) {
         return true;
     }
 
@@ -122,6 +127,8 @@ function wrap(mixed $val): mixed
         } elseif ($objVals->isObject()) {
             return new Expr(['object' => wrapValues($objVals->toArray())]);
         }
+    } elseif ($val instanceof DateTimeInterface) {
+        return $val->getTimestamp();
     }
 
     return $val;
