@@ -1,0 +1,6 @@
+/*.xml export-ignore
+/.stycleci.yml export-ignore
+/tests export-ignore
+/scripts export-ignore
+/docs export-ignore
+*.php diff=php
