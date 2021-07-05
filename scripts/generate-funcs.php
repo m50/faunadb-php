@@ -8,7 +8,7 @@ $files = scandir($folder);
 $out = ["/**"];
 
 foreach ($files as $file) {
-    if (!str_contains($file, '.php')) {
+    if (! str_contains($file, '.php')) {
         continue;
     }
     $fileContents = file_get_contents($folder . DIRECTORY_SEPARATOR . $file);
