@@ -17,6 +17,7 @@ use Webmozart\Assert\Assert;
 function Create(mixed $collectionRef, array $params): Expr
 {
     assertIsExprArg($collectionRef);
+
     return new Expr(['create' => wrap($collectionRef), 'params' => wrap($params)]);
 }
 
