@@ -1,6 +1,7 @@
 {
 	"name": "m50/faunadb",
 	"description": "A library for interacting with FaunaDB and writing FQL.",
+	"license": "MIT",
 	"keywords": [
 		"fauna",
 		"faunadb",
